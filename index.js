@@ -34,7 +34,6 @@ if (!TOKEN || !GUILD_ID) {
 }
 
 const client = new Client({
-  // MessageContent est un intent "privilégié" : à activer dans le Developer Portal
   intents: [
     GatewayIntentBits.Guilds,
     GatewayIntentBits.GuildMessages,
@@ -44,8 +43,6 @@ const client = new Client({
 });
 
 const TOPIC_PREFIX = 'candidat:';
-
-// ───────────────────────── Utilitaires ─────────────────────────
 
 const isStaff = (member) =>
   (STAFF_ROLE_ID && member.roles.cache.has(STAFF_ROLE_ID)) ||
@@ -128,7 +125,6 @@ function closeOnlyRow() {
 async function buildTranscript(channel) {
   let all = [];
   let lastId;
-  // Récupère jusqu'à 500 messages
   for (let i = 0; i < 5; i++) {
     const batch = await channel.messages.fetch({ limit: 100, before: lastId });
     if (batch.size === 0) break;
@@ -151,8 +147,6 @@ async function buildTranscript(channel) {
   });
   return lines.join('\n');
 }
-
-// ───────────────────────── Questionnaire ─────────────────────────
 
 async function runQuestionnaire(channel, user) {
   const answers = [];
@@ -214,8 +208,6 @@ async function runQuestionnaire(channel, user) {
   await channel.send(config.finalMessage.replace('{user}', `${user}`));
 }
 
-// ───────────────────────── Décisions ─────────────────────────
-
 async function handleDecision(interaction, accepted, reason) {
   const guild = interaction.guild;
   const channel = interaction.channel;
@@ -226,7 +218,6 @@ async function handleDecision(interaction, accepted, reason) {
 
   const votes = parseVotes(interaction.message.embeds[0]);
 
-  // Désactive Accepter/Refuser pour éviter une double décision
   await interaction.message.edit({ components: [closeOnlyRow()] }).catch(() => {});
 
   const embed = new EmbedBuilder()
@@ -238,7 +229,6 @@ async function handleDecision(interaction, accepted, reason) {
 
   await channel.send({ content: `<@${applicantId}>`, embeds: [embed] });
 
-  // MP au candidat
   const applicant = await client.users.fetch(applicantId).catch(() => null);
   if (applicant) {
     const dm = new EmbedBuilder()
@@ -255,7 +245,6 @@ async function handleDecision(interaction, accepted, reason) {
     });
   }
 
-  // Rôle automatique si accepté
   const acceptedRoleIds = (ACCEPTED_ROLE_ID || '')
     .split(',')
     .map((r) => r.trim())
@@ -304,8 +293,6 @@ async function handleClose(interaction) {
   setTimeout(() => channel.delete().catch(() => {}), 5_000);
 }
 
-// ───────────────────────── Événements ─────────────────────────
-
 client.once(Events.ClientReady, async () => {
   console.log(`✅ Connecté en tant que ${client.user.tag}`);
 
@@ -321,7 +308,6 @@ client.once(Events.ClientReady, async () => {
 
 client.on('interactionCreate', async (interaction) => {
   try {
-    // /panel-recrutement
     if (interaction.isChatInputCommand() && interaction.commandName === 'panel-recrutement') {
       const embed = new EmbedBuilder()
         .setColor(config.panel.color)
@@ -344,12 +330,10 @@ client.on('interactionCreate', async (interaction) => {
       return interaction.reply({ content: '✅ Panneau envoyé.', ephemeral: true });
     }
 
-    // Bouton Postuler
     if (interaction.isButton() && interaction.customId === 'apply') {
       const guild = interaction.guild;
       const user = interaction.user;
 
-      // On répond tout de suite (Discord coupe au bout de 3 secondes)
       await interaction.deferReply({ ephemeral: true });
 
       const existing = guild.channels.cache.find((c) => c.topic === `${TOPIC_PREFIX}${user.id}`);
@@ -405,7 +389,6 @@ client.on('interactionCreate', async (interaction) => {
       return;
     }
 
-    // Boutons staff
     if (interaction.isButton() && ['vote_yes', 'vote_no', 'accept', 'refuse', 'close'].includes(interaction.customId)) {
       if (!isStaff(interaction.member)) {
         return interaction.reply({
@@ -462,7 +445,6 @@ client.on('interactionCreate', async (interaction) => {
       }
     }
 
-    // Modal de refus
     if (interaction.isModalSubmit() && interaction.customId === 'refuse_modal') {
       if (!isStaff(interaction.member)) {
         return interaction.reply({ content: '⛔ Accès refusé.', ephemeral: true });
