@@ -1,0 +1,20 @@
+{
+  "answerTimeoutMinutes": 10,
+  "panel": {
+    "title": "",
+    "description": "Tu veux rejoindre le groupe? Clique sur le bouton pour ouvrir ton ticket de rc.",
+    "conditions": [
+      "Être actif"
+    ],
+    "buttonLabel": "Postuler",
+    "color": "#2B2D31"
+  },
+  "questions": [
+    "Combien d'heures as-tu sur FiveM ?",
+    "Quel est ton âge (IRL) ?",
+    "Quelle est ton expérience RP ? (serveurs, groupes illégaux précédents...)",
+    "Quelles sont tes qualités en RP ?",
+    "Quels sont tes défauts ?"
+  ],
+  "finalMessage": "✅ Merci {user} ! Ta candidature a bien été transmise.\n📞 **Tu seras contacté par les leads pour passer un vocal.** Reste disponible !"
+}
